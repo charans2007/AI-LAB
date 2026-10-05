@@ -1,0 +1,126 @@
+Python 3.13.9 (tags/v3.13.9:8183fa5, Oct 14 2025, 14:09:13) [MSC v.1944 64 bit (AMD64)] on win32
+Enter "help" below or click "Help" above for more information.
+import heapq
+
+
+INITIAL_STATE = (
+    (2, 8, 3),
+    (1, 6, 4),
+    (0, 7, 5)
+)
+
+GOAL_STATE = (
+    (1, 2, 3),
+    (8, 0, 4),
+    (7, 6, 5)
+)
+
+class PuzzleNode:
+    def __init__(self, state, g_cost, parent=None, move=""):
+        self.state = state
+        self.g_cost = g_cost  
+        self.h_cost = self.calculate_heuristic()  
+        self.f_cost = self.g_cost + self.h_cost  
+        self.parent = parent
+        self.move = move
+
+    def calculate_heuristic(self):
+        """Calculates h(n): Number of misplaced tiles (excluding the blank tile 0)"""
+        misplaced = 0
+        for r in range(3):
+            for c in range(3):
+                val = self.state[r][c]
+                if val != 0 and val != GOAL_STATE[r][c]:
+                    misplaced += 1
+        return misplaced
+
+    def find_blank(self):
+        """Finds the (row, col) coordinates of the blank tile (0)"""
+        for r in range(3):
+            for c in range(3):
+                if self.state[r][c] == 0:
+                    return r, c
+
+    def get_neighbors(self):
+        """Generates valid next states by moving the blank tile"""
+        neighbors = []
+        r, c = self.find_blank()
+        
+       
+        moves = [(-1, 0, "Up"), (1, 0, "Down"), (0, -1, "Left"), (0, 1, "Right")]
+        
+...         for dr, dc, direction in moves:
+...             nr, nc = r + dr, c + dc
+...             if 0 <= nr < 3 and 0 <= nc < 3:
+...               
+...                 new_state = [list(row) for row in self.state]
+...                 new_state[r][c], new_state[nr][nc] = new_state[nr][nc], new_state[r][c]
+...                
+...                 tuple_state = tuple(tuple(row) for row in new_state)
+...                 neighbors.append(PuzzleNode(tuple_state, self.g_cost + 1, self, direction))
+...         
+...         return neighbors
+... 
+...    
+...     def __lt__(self, other):
+...         return self.f_cost < other.f_cost
+... 
+... def print_state(state):
+...     """Utility function to print the 3x3 board cleanly"""
+...     for row in state:
+...         print(" ".join(str(x) if x != 0 else "_" for row in state for x in row))
+...     print()
+... 
+... def print_solution(node):
+...     """Traces back from the goal node to print the entire path taken"""
+...     path = []
+...     current = node
+...     while current:
+...         path.append(current)
+...         current = current.parent
+...     path.reverse()
+...     
+...     print(f"--- Solution Found in {len(path) - 1} moves ---")
+...     for step, n in enumerate(path):
+...         if step == 0:
+...             print(f"Initial State (g={n.g_cost}, h={n.h_cost}, f={n.f_cost}):")
+...         else:
+...             print(f"Step {step} - Moved Blank {n.move} (g={n.g_cost}, h={n.h_cost}, f={n.f_cost}):")
+...         
+...         for row in n.state:
+...             print("  " + " ".join(str(x) if x != 0 else "_" for x in row))
+...         print()
+... 
+... def solve_8_puzzle(initial_state):
+...     """Solves the 8-puzzle using A* Search"""
+...     start_node = PuzzleNode(initial_state, g_cost=0)
+...     
+...    
+...     open_list = []
+...     heapq.heappush(open_list, start_node)
+...     
+...    
+...     closed_list = set()
+...     
+...     while open_list:
+...         current_node = heapq.heappop(open_list)
+...         
+...         if current_node.state == GOAL_STATE:
+...             print_solution(current_node)
+...             return True
+...             
+...         closed_list.add(current_node.state)
+        
+        for neighbor in current_node.get_neighbors():
+            if neighbor.state in closed_list:
+                continue
+                
+            
+            heapq.heappush(open_list, neighbor)
+            
+    print("No solution found.")
+    return False
+
+
+if __name__ == "__main__":
+    solve_8_puzzle(INITIAL_STATE)
